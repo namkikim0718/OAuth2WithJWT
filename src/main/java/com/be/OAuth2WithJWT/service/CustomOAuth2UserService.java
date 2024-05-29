@@ -44,11 +44,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .build();
             memberRepository.save(member);
 
-            UserDTO userDTO = UserDTO.builder()
-                    .name(oAuth2Response.getName())
-                    .username(username)
-                    .role("ROLE_USER")
-                    .build();
+            UserDTO userDTO = new UserDTO();
+            userDTO.setName(oAuth2Response.getName());
+            userDTO.setUsername(username);
+            userDTO.setRole("ROLE_USER");
 
             return new CustomOAuth2User(userDTO);
         } else {
@@ -56,11 +55,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             memberRepository.save(existData);
 
-            UserDTO userDTO = UserDTO.builder()
-                    .name(existData.getName())
-                    .username(existData.getUsername())
-                    .role("ROLE_USER")
-                    .build();
+            UserDTO userDTO = new UserDTO();
+            userDTO.setName(existData.getName());
+            userDTO.setUsername(existData.getUsername());
+            userDTO.setRole("ROLE_USER");
 
             return new CustomOAuth2User(userDTO);
         }
