@@ -1,8 +1,6 @@
 package com.be.OAuth2WithJWT.service;
 
-import com.be.OAuth2WithJWT.dto.GoogleResponse;
-import com.be.OAuth2WithJWT.dto.NaverResponse;
-import com.be.OAuth2WithJWT.dto.OAuth2Response;
+import com.be.OAuth2WithJWT.dto.*;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -28,6 +26,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             return null;
         }
 
+        String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
 
+        UserDTO userDTO = UserDTO.builder()
+                .name(oAuth2Response.getName())
+                .username(username)
+                .role("ROLE_USER")
+                .build();
+
+        return new CustomOAuth2User(userDTO);
     }
 }
