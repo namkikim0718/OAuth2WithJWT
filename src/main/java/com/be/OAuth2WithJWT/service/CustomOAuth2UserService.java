@@ -1,6 +1,9 @@
 package com.be.OAuth2WithJWT.service;
 
+import com.be.OAuth2WithJWT.domain.Member;
 import com.be.OAuth2WithJWT.dto.*;
+import com.be.OAuth2WithJWT.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -8,7 +11,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+
+    private final MemberRepository memberRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -28,12 +34,39 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
 
-        UserDTO userDTO = UserDTO.builder()
-                .name(oAuth2Response.getName())
-                .username(username)
-                .role("ROLE_USER")
-                .build();
+        Member existData = memberRepository.findByUsername(username);
+        if (existData == null) {
+            Member member = Member.builder()
+                    .username(username)
+                    .email(oAuth2Response.getEmail())
+                    .name(oAuth2Response.getName())
+                    .role("ROLE_USER")
+                    .build();
+            memberRepository.save(member);
 
-        return new CustomOAuth2User(userDTO);
+            UserDTO userDTO = UserDTO.builder()
+                    .name(oAuth2Response.getName())
+                    .username(username)
+                    .role("ROLE_USER")
+                    .build();
+
+            return new CustomOAuth2User(userDTO);
+        } else {
+            existData.update(oAuth2Response.getEmail(), oAuth2Response.getName());
+
+            memberRepository.save(existData);
+
+            UserDTO userDTO = UserDTO.builder()
+                    .name(existData.getName())
+                    .username(existData.getUsername())
+                    .role("ROLE_USER")
+                    .build();
+
+            return new CustomOAuth2User(userDTO);
+        }
+
+
+
+
     }
 }
